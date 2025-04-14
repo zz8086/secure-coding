@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ other_user.username }}님과의 대화{% endblock %}
+{% block content %}
+<h2>{{ other_user.username }}님과의 대화</h2>
+
+<ul>
+  {% for msg in messages %}
+    <li>
+      <strong>{{ '나' if msg.sender_id == session['user_id'] else other_user.username }}:</strong>
+      {{ msg.content }} <small>({{ msg.timestamp }})</small>
+    </li>
+  {% endfor %}
+</ul>
+
+<form method="POST" action="{{ url_for('send_message') }}">
+  <input type="hidden" name="receiver_id" value="{{ other_user.id }}">
+  <textarea name="content" required></textarea><br>
+  <button type="submit">메시지 보내기</button>
+</form>
+{% endblock %}

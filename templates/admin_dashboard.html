@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}관리자 대시보드{% endblock %}
+{% block content %}
+<h2>관리자 대시보드</h2>
+
+<h3>사용자 목록</h3>
+<ul>
+  {% for u in users %}
+    <li>
+      {{ u.username }} {% if u.is_admin %}(관리자){% endif %}
+      {% if not u.is_admin %}
+      <form action="{{ url_for('delete_user') }}" method="POST" style="display:inline;">
+        <input type="hidden" name="user_id" value="{{ u.id }}">
+        <button type="submit" onclick="return confirm('정말 삭제할까요?')">삭제</button>
+      </form>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+<h3>상품 목록</h3>
+<ul>
+  {% for p in products %}
+    <li>
+      {{ p.title }} - 가격: {{ p.price }}
+      <form action="{{ url_for('delete_product') }}" method="POST" style="display:inline;">
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <button type="submit" onclick="return confirm('정말 삭제할까요?')">삭제</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+
+<h3>신고 목록</h3>
+<ul>
+  {% for r in reports %}
+    <li>
+      신고자: {{ r.reporter_id }}, 대상: {{ r.target_id }}, 이유: {{ r.reason }}
+      <form action="{{ url_for('resolve_report') }}" method="POST" style="display:inline;">
+        <input type="hidden" name="report_id" value="{{ r.id }}">
+        <button type="submit">처리 완료</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

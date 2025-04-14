@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}상품 상세보기{% endblock %}
+{% block content %}
+<h2>{{ product.title }}</h2>
+<p>{{ product.description }}</p>
+<p>가격: {{ product.price }}</p>
+<p>판매자: {{ seller.username if seller else '알 수 없음' }}</p>
+
+{% if user.id != product.seller_id %}
+<!-- 💌 판매자에게 쪽지 보내기 -->
+<p><a href="{{ url_for('view_conversation', user_id=seller.id) }}">💌 판매자에게 쪽지 보내기</a></p>
+{% endif %}
+
+{% endblock %}

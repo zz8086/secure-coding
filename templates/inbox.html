@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}받은 쪽지함{% endblock %}
+{% block content %}
+<h2>📬 받은 쪽지함</h2>
+
+{% if senders %}
+  <ul>
+    {% for sender in senders %}
+      <li>
+        <a href="{{ url_for('view_conversation', user_id=sender.id) }}">
+          {{ sender.username }}님과의 대화 보기
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>받은 쪽지가 없습니다.</p>
+{% endif %}
+
+<a href="{{ url_for('dashboard') }}">← 대시보드로 돌아가기</a>
+{% endblock %}
