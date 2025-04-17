@@ -1,12 +1,16 @@
 # secure-coding
 
 사용 방법
-git clone https://github.com/zz8086/secure-coding
-conda env create -f enviroments.yaml
+---------
+<pre><code>git clone https://github.com/zz8086/secure-coding</code></pre>
+<pre><code>conda env create -f enviroments.yaml</code></pre>
 
 서버 프로세스를 실행
-python3 app.py
+-----------------
+<pre><code>python3 app.py</code></pre>
 
-admin 사용자
+admin 사용자 로그인 방법
+----------------
 ID : admin
+
 password : admin
