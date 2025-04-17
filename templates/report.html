@@ -2,10 +2,37 @@
 {% block title %}신고하기{% endblock %}
 {% block content %}
 <h2>신고하기</h2>
+
+{% for message in get_flashed_messages() %}
+<div class="alert">{{ message }}</div>
+{% endfor %}
+
 <form method="post">
-  신고 대상 (사용자ID 또는 상품ID): <input type="text" name="target_id" required><br>
+  <!-- 사용자 선택 -->
+  신고 대상 사용자:
+  <select name="target_id" required>
+    <option value="">-- 사용자 선택 --</option>
+    {% for user in users %}
+      <option value="{{ user.id }}">{{ user.username }}</option>
+    {% endfor %}
+    <option value="none">없음</option>
+  </select><br>
+
+  <!-- 상품 선택 (필수가 아니게 변경) -->
+  신고 상품:
+  <select name="product_id">
+    <option value="">-- 상품 선택 (옵션) --</option>
+    {% for product in products %}
+      <option value="{{ product.id }}">{{ product.title }}</option>
+    {% endfor %}
+  </select><br>
+
+  <!-- 사유 -->
   신고 사유: <br>
   <textarea name="reason" rows="4" cols="50" required></textarea><br>
+  
+  <p><small>참고: 신고가 3회 이상 누적되면 해당 사용자는 휴면 계정으로 전환됩니다.</small></p>
+  
   <button type="submit">신고 접수</button>
 </form>
 {% endblock %}

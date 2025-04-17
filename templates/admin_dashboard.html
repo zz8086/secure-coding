@@ -3,44 +3,160 @@
 {% block content %}
 <h2>관리자 대시보드</h2>
 
-<h3>사용자 목록</h3>
-<ul>
-  {% for u in users %}
-    <li>
-      {{ u.username }} {% if u.is_admin %}(관리자){% endif %}
-      {% if not u.is_admin %}
-      <form action="{{ url_for('delete_user') }}" method="POST" style="display:inline;">
-        <input type="hidden" name="user_id" value="{{ u.id }}">
-        <button type="submit" onclick="return confirm('정말 삭제할까요?')">삭제</button>
-      </form>
-      {% endif %}
-    </li>
-  {% endfor %}
-</ul>
+{% for message in get_flashed_messages() %}
+<div class="alert">{{ message }}</div>
+{% endfor %}
 
-<h3>상품 목록</h3>
-<ul>
-  {% for p in products %}
-    <li>
-      {{ p.title }} - 가격: {{ p.price }}
-      <form action="{{ url_for('delete_product') }}" method="POST" style="display:inline;">
-        <input type="hidden" name="product_id" value="{{ p.id }}">
-        <button type="submit" onclick="return confirm('정말 삭제할까요?')">삭제</button>
-      </form>
-    </li>
-  {% endfor %}
-</ul>
+<div class="admin-tabs">
+  <a href="#users" class="tab active">사용자 관리</a>
+  <a href="#products" class="tab">상품 관리</a>
+  <a href="#reports" class="tab">신고 관리</a>
+</div>
 
-<h3>신고 목록</h3>
-<ul>
-  {% for r in reports %}
-    <li>
-      신고자: {{ r.reporter_id }}, 대상: {{ r.target_id }}, 이유: {{ r.reason }}
-      <form action="{{ url_for('resolve_report') }}" method="POST" style="display:inline;">
-        <input type="hidden" name="report_id" value="{{ r.id }}">
-        <button type="submit">처리 완료</button>
-      </form>
-    </li>
-  {% endfor %}
-</ul>
+<div id="users" class="tab-content active">
+  <h3>사용자 목록</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>사용자명</th>
+        <th>프로필</th>
+        <th>계정 상태</th>
+        <th>신고 횟수</th>
+        <th>관리자</th>
+        <th>잠금 상태</th>
+        <th>계정 관리</th>
+        <th>삭제</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.bio or '프로필 없음' }}</td>
+        <td>{{ user.status }}</td>
+        <td>{{ user.report_count }}</td>
+        <td>{{ '관리자' if user.is_admin else '일반 회원' }}</td>
+        <td>{{ '잠김' if user.is_locked else '정상' }}</td>
+        <td>
+          <form action="{{ url_for('update_user_status') }}" method="post">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <select name="status">
+              <option value="active" {% if user.status == 'active' %}selected{% endif %}>활성</option>
+              <option value="inactive" {% if user.status == 'inactive' %}selected{% endif %}>휴면</option>
+              <option value="suspended" {% if user.status == 'suspended' %}selected{% endif %}>정지</option>
+            </select>
+            <label>
+              <input type="checkbox" name="reset_reports"> 신고 초기화
+            </label>
+            <label>
+              <input type="checkbox" name="toggle_lock"> 잠금 {% if user.is_locked %}해제{% else %}설정{% endif %}
+            </label>
+            <button type="submit">변경 저장</button>
+          </form>
+        </td>
+        <td>
+          <form action="{{ url_for('delete_user') }}" method="post" onsubmit="return confirm('정말 이 사용자를 삭제하시겠습니까?');">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <button type="submit">삭제</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div id="products" class="tab-content">
+  <h3>상품 목록</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>제목</th>
+        <th>설명</th>
+        <th>가격</th>
+        <th>판매자 ID</th>
+        <th>상태</th>
+        <th>관리</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>{{ product.title }}</td>
+        <td>{{ product.description|truncate(50) }}</td>
+        <td>{{ product.price }}</td>
+        <td>{{ product.seller_id }}</td>
+        <td>{{ product.status }}</td>
+        <td>
+          <form action="{{ url_for('toggle_product_visibility') }}" method="post" style="display:inline;">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <button type="submit">
+              {% if product.status == 'hidden' %}표시{% else %}숨김{% endif %}
+            </button>
+          </form>
+          <form action="{{ url_for('delete_product') }}" method="post" style="display:inline;" onsubmit="return confirm('정말 이 상품을 삭제하시겠습니까?');">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <button type="submit">삭제</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div id="reports" class="tab-content">
+  <h3>신고 목록</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>신고자 ID</th>
+        <th>대상 ID</th>
+        <th>관련 상품 ID</th>
+        <th>사유</th>
+        <th>신고 일시</th>
+        <th>처리</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for report in reports %}
+      <tr>
+        <td>{{ report.reporter_id }}</td>
+        <td>{{ report.target_id }}</td>
+        <td>{{ report.product_id or '없음' }}</td>
+        <td>{{ report.reason }}</td>
+        <td>{{ report.created_at }}</td>
+        <td>
+          <form action="{{ url_for('resolve_report') }}" method="post">
+            <input type="hidden" name="report_id" value="{{ report.id }}">
+            <button type="submit">처리 완료</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+// 탭 전환 스크립트
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = document.querySelectorAll('.tab');
+  const contents = document.querySelectorAll('.tab-content');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // 모든 탭과 내용 비활성화
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      
+      // 클릭한 탭과 연결된 내용 활성화
+      this.classList.add('active');
+      document.querySelector(this.getAttribute('href')).classList.add('active');
+    });
+  });
+});
+</script>
 {% endblock %}
