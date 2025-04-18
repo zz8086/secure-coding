@@ -13,4 +13,6 @@ admin 사용자 로그인 방법
 ----------------
 ID : admin
 
-password : admin
+password : admin_password
+
+admin 페이지는 /admin 입니다.
